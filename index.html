@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streamer Studio Incremental</title>
+  <style>
+    :root {
+      --bg: #0a0f1d;
+      --bg-2: #0f1([docs.github.com](https://docs.github.com/en/enterprise-cloud%40latest/pages/getting-started-with-github-pages/what-is-github-pages?utm_source=chatgpt.com))2: rgba(30, 41, 59, 0.92);
+      --panel-3: rgba(51, 65, 85, 0.95);
+      --text: #e5eefc;
+      --muted: #9fb0d0;
+      --accent: #8b5cf6;
+      --accent-2: #3b82f6;
+      --accent-3: #22c55e;
+      --accent-4: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,0.09);
+      --shadow: 0 12px 30px rgba(0,0,0,0.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(139,92,246,0.15), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1450px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(30,41,59,0.9));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .hero-side {
+      min-width: 240px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .stat-card {
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 16px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .panel-sub {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+    }
+
+    button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 15px;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--panel-2);
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
+      text-align: left;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+    }
+
+    button:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .action-primary { background: linear-gradient(135deg, #7c3aed, #4f46e5); }
+    .action-secondary { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .action-success { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .action-gold { background: linear-gradient(135deg, #d97706, #b45309); }
+    .action-danger { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+
+    .action-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .action-desc {
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.86);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini-card {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .mini-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .mini-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      max-height: 720px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .item {
+      padding: 14px;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.035);
+      display: grid;
+      gap: 8px;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .item-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .item-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .item-badge {
+      white-space: nowrap;
+      font-size: 11px;
+      color: #dbeafe;
+      background: rgba(59,130,246,0.18);
+      border: 1px solid rgba(59,130,246,0.25);
+      padding: 5px 9px;
+      border-radius: 999px;
+    }
+
+    .item button {
+      margin-top: 4px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .milestones {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .milestone {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .milestone.done {
+      border-color: rgba(34,197,94,0.4);
+      background: rgba(34,197,94,0.08);
+    }
+
+    .milestone-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .milestone-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .footer-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .footer-row button {
+      max-width: 170px;
+      text-align: center;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .log {
+      max-height: 230px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+    }
+
+    .log-entry {
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 7px;
+    }
+
+    @media (max-width: 1220px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .main-grid { grid-template-columns: 1fr; }
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 14px; }
+      .hero { flex-direction: column; align-items: start; }
+      .hero-side { width: 100%; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .mini-grid, .milestones { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero card">
+      <div>
+        <h1>Streamer Studio Incremental</h1>
+        <p>Build a streaming empire from a tiny setup into a media network. Stream live, upload clips, sign sponsors, hire staff, unlock milestones, and rebrand for permanent clout bonuses. This version is designed as a polished, single-file, GitHub Pages-ready release.</p>
+      </div>
+      <div class="hero-side">
+        <div class="badge" id="autosaveBadge">Autosave: On</div>
+        <div class="badge" id="offlineBadge">Offline Progress: Ready</div>
+        <div class="badge" id="versionBadge">Version 1.0 Release Build</div>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Cash</div>
+        <div class="stat-value" id="cashStat">$0</div>
+        <div class="stat-sub" id="cashSub">Start your channel.</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Viewers</div>
+        <div class="stat-value" id="viewersStat">0</div>
+        <div class="stat-sub" id="viewersSub">Live audience size.</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Subscribers</div>
+        <div class="stat-value" id="subsStat">0</div>
+        <div class="stat-sub" id="subsSub">Core community growth.</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Hype</div>
+        <div class="stat-value" id="hypeStat">0</div>
+        <div class="stat-sub" id="hypeSub">Used for sponsor deals.</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Clout</div>
+        <div class="stat-value" id="cloutStat">0</div>
+        <div class="stat-sub" id="cloutSub">Permanent prestige bonus.</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Cash / Sec</div>
+        <div class="stat-value" id="cpsStat">0</div>
+        <div class="stat-sub" id="cpsSub">Total passive revenue.</div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Main Actions</div>
+            <div class="panel-sub">Your active gameplay loop</div>
+          </div>
+          <div class="panel-sub" id="nextGoal">Next Goal: Reach 100 viewers</div>
+        </div>
+
+        <div class="actions">
+          <button class="action-primary" id="goLiveBtn">
+            <div class="action-title">Go Live</div>
+            <div class="action-desc">Earn cash, gain viewers, and roll for new subscribers based on your current brand strength.</div>
+          </button>
+
+          <button class="action-secondary" id="postClipBtn">
+            <div class="action-title">Post Clip</div>
+            <div class="action-desc">Convert current momentum into a burst of cash, viewers, and hype.</div>
+          </button>
+
+          <button class="action-success" id="collabBtn">
+            <div class="action-title">Do Collaboration</div>
+            <div class="action-desc">Spend your reputation on a major growth event once your channel is large enough.</div>
+          </button>
+
+          <button class="action-gold" id="sponsorBtn">
+            <div class="action-title">Sign Sponsor Deal</div>
+            <div class="action-desc">Trade hype for a large instant payout and a temporary money boost.</div>
+          </button>
+
+          <button class="action-danger" id="prestigeBtn">
+            <div class="action-title">Rebrand</div>
+            <div class="action-desc">Reset progress for permanent clout. Clout increases all future gains.</div>
+          </button>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-label">Live Earnings</div>
+            <div class="mini-value" id="liveValue">$0</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Clip Earnings</div>
+            <div class="mini-value" id="clipValue">$0</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Sponsor Value</div>
+            <div class="mini-value" id="sponsorValue">$0</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Rebrand Gain</div>
+            <div class="mini-value" id="prestigeValue">0 Clout</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Upgrades</div>
+            <div class="panel-sub">Permanent boosts for this run</div>
+          </div>
+          <div class="panel-sub" id="upgradeCount">0 / 0</div>
+        </div>
+        <div class="list" id="upgradeList"></div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Staff & Assets</div>
+            <div class="panel-sub">Your passive income engine</div>
+          </div>
+          <div class="panel-sub" id="assetPower">0 owned</div>
+        </div>
+        <div class="list" id="buildingList"></div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Milestones</div>
+            <div class="panel-sub">Release-ready progression targets</div>
+          </div>
+        </div>
+        <div class="milestones" id="milestoneList"></div>
+        <div class="footer-row">
+          <button id="saveBtn">Save</button>
+          <button id="loadBtn">Load</button>
+          <button id="exportBtn">Export Save</button>
+          <button id="importBtn">Import Save</button>
+          <button id="resetBtn">Hard Reset</button>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Session Log</div>
+            <div class="panel-sub">Useful for testing balance</div>
+          </div>
+        </div>
+        <div class="log" id="logList"></div>
+        <div class="muted" style="margin-top:12px" id="summaryInfo"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SAVE_KEY = "streamer_studio_incremental_release_save";
+    const AUTOSAVE_MS = 10000;
+    const MAX_LOGS = 20;
+
+    const baseState = () => ({
+      cash: 0,
+      viewers: 0,
+      subs: 0,
+      hype: 0,
+      clout: 0,
+      sponsorStacks: 0,
+      sponsorBoostTimer: 0,
+      streamPower: 1,
+      clipPower: 1,
+      viewerWorth: 0.08,
+      subChance: 0.03,
+      hypeGain: 1,
+      prestigeBoost: 1,
+      totalStreams: 0,
+      totalClips: 0,
+      totalSponsors: 0,
+      bestCash: 0,
+      lifetimeCash: 0,
+      totalPlaySeconds: 0,
+      buildings: {},
+      upgrades: {},
+      milestones: {},
+      logs: [],
+      lastSavedAt: Date.now(),
+      lastTickAt: Date.now()
+    });
+
+    const state = baseState();
+
+    const upgrades = [
+      { id: "usbMic", name: "USB Mic", cost: 25, desc: "Double live earnings.", buy: () => state.streamPower *= 2 },
+      { id: "faceCam", name: "Face Cam", cost: 90, desc: "Double viewer gain from active actions.", buy: () => state.viewerWorth *= 1.8 },
+      { id: "editedShorts", name: "Edited Shorts", cost: 240, desc: "Triple clip payouts.", buy: () => state.clipPower *= 3 },
+      { id: "communityMods", name: "Community Mods", cost: 800, desc: "Increase subscriber chance by 60%.", buy: () => state.subChance *= 1.6 },
+      { id: "overlayPack", name: "Overlay Pack", cost: 1500, desc: "Boost hype generation by 2x.", buy: () => state.hypeGain *= 2 },
+      { id: "streamDeck", name: "Stream Deck", cost: 4000, desc: "Boost active income by 2.5x.", buy: () => state.streamPower *= 2.5 },
+      { id: "brandManager", name: "Brand Manager", cost: 12000, desc: "Sponsor deals are 2x stronger.", buy: () => state.sponsorStacks += 1 },
+      { id: "staffEditors", name: "Editing Team", cost: 30000, desc: "Clip payouts gain another 4x multiplier.", buy: () => state.clipPower *= 4 },
+      { id: "vipDiscord", name: "VIP Community", cost: 85000, desc: "Subscriber conversion doubles.", buy: () => state.subChance *= 2 },
+      { id: "premiumStudio", name: "Premium Studio", cost: 250000, desc: "Triple all income sources.", buy: () => { state.streamPower *= 3; state.clipPower *= 3; state.viewerWorth *= 3; } },
+      { id: "merchDrop", name: "Merch Drop", cost: 700000, desc: "Subscribers are worth much more passive revenue.", buy: () => state.viewerWorth *= 1.7 },
+      { id: "viralArc", name: "Viral Arc", cost: 1800000, desc: "Massive endgame push for all active actions.", buy: () => { state.streamPower *= 8; state.clipPower *= 8; state.hypeGain *= 3; } }
+    ];
+
+    const buildings = [
+      { id: "desk", name: "Starter Desk", baseCost: 20, income: 0.5, desc: "Basic streaming setup." },
+      { id: "chatbot", name: "Chat Bot", baseCost: 140, income: 4, desc: "Keeps engagement high." },
+      { id: "editor", name: "Video Editor", baseCost: 900, income: 24, desc: "Turns content into revenue." },
+      { id: "manager", name: "Channel Manager", baseCost: 6000, income: 130, desc: "Improves monetization and scale." },
+      { id: "agency", name: "Talent Agency", baseCost: 50000, income: 850, desc: "Secures premium deals." },
+      { id: "studio", name: "Broadcast Studio", baseCost: 420000, income: 5200, desc: "Heavy late-game passive boost." },
+      { id: "network", name: "Media Network", baseCost: 3500000, income: 34000, desc: "A full entertainment business." }
+    ];
+
+    const milestones = [
+      { id: "m1", title: "First Audience", desc: "Reach 100 viewers.", check: s => s.viewers >= 100 },
+      { id: "m2", title: "Subscriber Base", desc: "Reach 25 subscribers.", check: s => s.subs >= 25 },
+      { id: "m3", title: "First Sponsor", desc: "Complete 1 sponsor deal.", check: s => s.totalSponsors >= 1 },
+      { id: "m4", title: "Serious Creator", desc: "Earn $100K total cash.", check: s => s.lifetimeCash >= 100000 },
+      { id: "m5", title: "Rebrand Ready", desc: "Gain at least 1 clout.", check: s => s.clout >= 1 },
+      { id: "m6", title: "Media Presence", desc: "Reach 10K viewers.", check: s => s.viewers >= 10000 },
+      { id: "m7", title: "Wealth Engine", desc: "Reach $1M cash on hand.", check: s => s.cash >= 1000000 },
+      { id: "m8", title: "Empire", desc: "Own 50 total assets.", check: s => totalAssetsOwned() >= 50 }
+    ];
+
+    for (const b of buildings) state.buildings[b.id] = 0;
+    for (const u of upgrades) state.upgrades[u.id] = false;
+    for (const m of milestones) state.milestones[m.id] = false;
+
+    function format(n) {
+      if (!isFinite(n)) return "∞";
+      const abs = Math.abs(n);
+      if (abs < 1000) return (Math.floor(n * 100) / 100).toLocaleString();
+      const units = ["K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
+      let unit = -1;
+      while (Math.abs(n) >= 1000 && unit < units.length - 1) {
+        n /= 1000;
+        unit++;
+      }
+      return n.toFixed(Math.abs(n) >= 100 ? 0 : Math.abs(n) >= 10 ? 1 : 2) + units[unit];
+    }
+
+    function currency(n) {
+      return "$" + format(n);
+    }
+
+    function sponsorMultiplier() {
+      return 1 + state.sponsorStacks * 0.35 + (state.sponsorBoostTimer > 0 ? 1 : 0);
+    }
+
+    function totalAssetsOwned() {
+      return buildings.reduce((sum, b) => sum + (state.buildings[b.id] || 0), 0);
+    }
+
+    function getBuildingCost(building) {
+      return Math.floor(building.baseCost * Math.pow(1.15, state.buildings[building.id] || 0));
+    }
+
+    function getPassiveIncome() {
+      let total = 0;
+      for (const b of buildings) total += (state.buildings[b.id] || 0) * b.income;
+      total += state.viewers * state.viewerWorth * 0.02;
+      total += state.subs * 1.75;
+      total *= sponsorMultiplier();
+      total *= state.prestigeBoost;
+      return total;
+    }
+
+    function livePayoutEstimate() {
+      const base = (4 + state.viewers * 0.08 + state.subs * 1.65) * state.streamPower;
+      return base * sponsorMultiplier() * state.prestigeBoost;
+    }
+
+    function clipPayoutEstimate() {
+      const base = (14 + state.viewers * 0.22 + state.subs * 0.7) * state.clipPower;
+      return base * sponsorMultiplier() * state.prestigeBoost;
+    }
+
+    function sponsorDealValue() {
+      const base = (150 + state.viewers * 0.4 + state.subs * 18 + state.hype * 8);
+      return base * (1 + state.sponsorStacks * 0.75) * state.prestigeBoost;
+    }
+
+    function prestigeGain() {
+      return Math.floor(Math.sqrt(state.lifetimeCash / 1000000));
+    }
+
+    function canPrestige() {
+      return prestigeGain() > state.clout;
+    }
+
+    function addCash(amount) {
+      state.cash += amount;
+      state.lifetimeCash += amount;
+      state.bestCash = Math.max(state.bestCash, state.cash);
+    }
+
+    function addLog(message) {
+      state.logs.unshift({ text: message, ts: Date.now() });
+      state.logs = state.logs.slice(0, MAX_LOGS);
+    }
+
+    function maybeSub(rolls = 1) {
+      let gained = 0;
+      for (let i = 0; i < rolls; i++) {
+        if (Math.random() < Math.min(0.9, state.subChance)) gained++;
+      }
+      state.subs += gained;
+      return gained;
+    }
+
+    function goLive() {
+      const viewersGained = (5 + state.subs * 0.22) * state.prestigeBoost;
+      const earned = livePayoutEstimate();
+      const hypeGained = Math.max(1, Math.floor((1 + state.subs * 0.03) * state.hypeGain));
+      state.viewers += viewersGained;
+      state.hype += hypeGained;
+      addCash(earned);
+      state.totalStreams++;
+      const subs = maybeSub(1 + Math.floor(state.viewers / 5000));
+      addLog(`Went live: +${currency(earned)}, +${format(viewersGained)} viewers, +${hypeGained} hype${subs ? `, +${subs} subs` : ""}.`);
+      updateMilestones();
+      render();
+    }
+
+    function postClip() {
+      const earned = clipPayoutEstimate();
+      const viewersGained = (2 + state.subs * 0.08) * state.prestigeBoost;
+      const hypeGained = Math.max(1, Math.floor(2 * state.hypeGain));
+      addCash(earned);
+      state.viewers += viewersGained;
+      state.hype += hypeGained;
+      state.totalClips++;
+      const subs = maybeSub(1);
+      addLog(`Posted a clip: +${currency(earned)}, +${format(viewersGained)} viewers, +${hypeGained} hype${subs ? `, +${subs} sub` : ""}.`);
+      updateMilestones();
+      render();
+    }
+
+    function doCollab() {
+      if (state.viewers < 300) return;
+      const viewerBoost = Math.max(80, state.viewers * 0.16) * state.prestigeBoost;
+      const subBoost = Math.max(3, Math.floor(2 + state.subs * 0.06));
+      const cashBoost = viewerBoost * 2.8;
+      state.viewers += viewerBoost;
+      state.subs += subBoost;
+      state.hype += Math.floor(8 * state.hypeGain);
+      addCash(cashBoost);
+      addLog(`Collab success: +${format(viewerBoost)} viewers, +${subBoost} subs, +${currency(cashBoost)}.`);
+      updateMilestones();
+      render();
+    }
+
+    function signSponsorDeal() {
+      if (state.hype < 50) return;
+      const payout = sponsorDealValue();
+      state.hype -= 50;
+      addCash(payout);
+      state.sponsorBoostTimer = 60;
+      state.totalSponsors++;
+      addLog(`Signed sponsor deal: +${currency(payout)} and a 60s sponsor boost.`);
+      updateMilestones();
+      render();
+    }
+
+    function doPrestige() {
+      if (!canPrestige()) return;
+      const newClout = prestigeGain();
+      const gained = newClout - state.clout;
+      const preservedClout = newClout;
+      const oldLogs = [`Rebrand complete: +${gained} clout earned.`];
+      Object.assign(state, baseState());
+      state.clout = preservedClout;
+      state.prestigeBoost = 1 + preservedClout * 0.5;
+      for (const b of buildings) state.buildings[b.id] = 0;
+      for (const u of upgrades) state.upgrades[u.id] = false;
+      for (const m of milestones) state.milestones[m.id] = false;
+      state.logs = oldLogs.map(text => ({ text, ts: Date.now() }));
+      updateMilestones();
+      render();
+    }
+
+    function buyUpgrade(id) {
+      const item = upgrades.find(u => u.id === id);
+      if (!item || state.upgrades[id] || state.cash < item.cost) return;
+      state.cash -= item.cost;
+      state.upgrades[id] = true;
+      item.buy();
+      addLog(`Purchased upgrade: ${item.name}.`);
+      render();
+    }
+
+    function buyBuilding(id) {
+      const item = buildings.find(b => b.id === id);
+      if (!item) return;
+      const cost = getBuildingCost(item);
+      if (state.cash < cost) return;
+      state.cash -= cost;
+      state.buildings[id] = (state.buildings[id] || 0) + 1;
+      addLog(`Bought ${item.name}.`);
+      updateMilestones();
+      render();
+    }
+
+    function updateMilestones() {
+      for (const m of milestones) {
+        if (!state.milestones[m.id] && m.check(state)) {
+          state.milestones[m.id] = true;
+          addLog(`Milestone unlocked: ${m.title}.`);
+        }
+      }
+    }
+
+    function nextGoalText() {
+      if (state.viewers < 100) return "Next Goal: Reach 100 viewers";
+      if (state.subs < 25) return "Next Goal: Reach 25 subscribers";
+      if (state.hype < 50) return "Next Goal: Reach 50 hype for sponsor deals";
+      if (state.cash < 1000000) return "Next Goal: Build toward your first rebrand";
+      return "Next Goal: Scale into a media empire";
+    }
+
+    function renderUpgrades() {
+      const root = document.getElementById("upgradeList");
+      root.innerHTML = "";
+      for (const u of upgrades) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "item";
+        wrapper.innerHTML = `
+          <div class="item-top">
+            <div>
+              <div class="item-title">${u.name}</div>
+              <div class="item-meta">${u.desc}</div>
+            </div>
+            <div class="item-badge">${state.upgrades[u.id] ? "Owned" : currency(u.cost)}</div>
+          </div>
+        `;
+        const btn = document.createElement("button");
+        btn.textContent = state.upgrades[u.id] ? "Purchased" : "Buy Upgrade";
+        btn.disabled = state.upgrades[u.id] || state.cash < u.cost;
+        btn.onclick = () => buyUpgrade(u.id);
+        wrapper.appendChild(btn);
+        root.appendChild(wrapper);
+      }
+      document.getElementById("upgradeCount").textContent = `${upgrades.filter(u => state.upgrades[u.id]).length} / ${upgrades.length}`;
+    }
+
+    function renderBuildings() {
+      const root = document.getElementById("buildingList");
+      root.innerHTML = "";
+      for (const b of buildings) {
+        const owned = state.buildings[b.id] || 0;
+        const cost = getBuildingCost(b);
+        const wrapper = document.createElement("div");
+        wrapper.className = "item";
+        wrapper.innerHTML = `
+          <div class="item-top">
+            <div>
+              <div class="item-title">${b.name}</div>
+              <div class="item-meta">${b.desc}<br>+${currency(b.income)} passive income each.</div>
+            </div>
+            <div class="item-badge">Owned: ${owned}</div>
+          </div>
+        `;
+        const btn = document.createElement("button");
+        btn.textContent = `Buy for ${currency(cost)}`;
+        btn.disabled = state.cash < cost;
+        btn.onclick = () => buyBuilding(b.id);
+        wrapper.appendChild(btn);
+        root.appendChild(wrapper);
+      }
+      document.getElementById("assetPower").textContent = `${totalAssetsOwned()} owned`;
+    }
+
+    function renderMilestones() {
+      const root = document.getElementById("milestoneList");
+      root.innerHTML = "";
+      for (const m of milestones) {
+        const div = document.createElement("div");
+        div.className = `milestone ${state.milestones[m.id] ? "done" : ""}`;
+        div.innerHTML = `
+          <div class="milestone-title">${state.milestones[m.id] ? "✓ " : ""}${m.title}</div>
+          <div class="milestone-desc">${m.desc}</div>
+        `;
+        root.appendChild(div);
+      }
+    }
+
+    function renderLogs() {
+      const root = document.getElementById("logList");
+      root.innerHTML = "";
+      if (!state.logs.length) {
+        root.innerHTML = `<div class="log-entry">No events yet. Start by going live.</div>`;
+        return;
+      }
+      for (const log of state.logs) {
+        const div = document.createElement("div");
+        div.className = "log-entry";
+        div.textContent = `${new Date(log.ts).toLocaleTimeString()} - ${log.text}`;
+        root.appendChild(div);
+      }
+    }
+
+    function render() {
+      const cps = getPassiveIncome();
+      document.getElementById("cashStat").textContent = currency(state.cash);
+      document.getElementById("viewersStat").textContent = format(state.viewers);
+      document.getElementById("subsStat").textContent = format(state.subs);
+      document.getElementById("hypeStat").textContent = format(state.hype);
+      document.getElementById("cloutStat").textContent = format(state.clout);
+      document.getElementById("cpsStat").textContent = currency(cps);
+
+      document.getElementById("cashSub").textContent = `Lifetime: ${currency(state.lifetimeCash)}`;
+      document.getElementById("viewersSub").textContent = `Best cash: ${currency(state.bestCash)}`;
+      document.getElementById("subsSub").textContent = `Sub chance: ${(Math.min(0.9, state.subChance) * 100).toFixed(2)}%`;
+      document.getElementById("hypeSub").textContent = `Sponsor threshold: 50 hype`;
+      document.getElementById("cloutSub").textContent = `Prestige multiplier: x${format(state.prestigeBoost)}`;
+      document.getElementById("cpsSub").textContent = state.sponsorBoostTimer > 0 ? `Sponsor boost active: ${state.sponsorBoostTimer}s` : `Passive revenue stable`;
+
+      document.getElementById("liveValue").textContent = currency(livePayoutEstimate());
+      document.getElementById("clipValue").textContent = currency(clipPayoutEstimate());
+      document.getElementById("sponsorValue").textContent = currency(sponsorDealValue());
+      document.getElementById("prestigeValue").textContent = `${Math.max(0, prestigeGain() - state.clout)} Clout`;
+      document.getElementById("nextGoal").textContent = nextGoalText();
+
+      document.getElementById("collabBtn").disabled = state.viewers < 300;
+      document.getElementById("sponsorBtn").disabled = state.hype < 50;
+      document.getElementById("prestigeBtn").disabled = !canPrestige();
+
+      document.getElementById("summaryInfo").innerHTML = `
+        Streams: <b>${format(state.totalStreams)}</b><br>
+        Clips: <b>${format(state.totalClips)}</b><br>
+        Sponsors: <b>${format(state.totalSponsors)}</b><br>
+        Assets Owned: <b>${format(totalAssetsOwned())}</b><br>
+        Session Time: <b>${format(state.totalPlaySeconds)}s</b>
+      `;
+
+      renderUpgrades();
+      renderBuildings();
+      renderMilestones();
+      renderLogs();
+    }
+
+    function exportSave() {
+      const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+      navigator.clipboard.writeText(payload).then(() => {
+        addLog("Save exported to clipboard.");
+        render();
+      }).catch(() => {
+        prompt("Copy this save string:", payload);
+      });
+    }
+
+    function importSave() {
+      const raw = prompt("Paste your save string here:");
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(decodeURIComponent(escape(atob(raw))));
+        hydrateState(parsed);
+        addLog("Save imported successfully.");
+        render();
+      } catch (err) {
+        alert("Invalid save string.");
+      }
+    }
+
+    function hydrateState(data) {
+      const fresh = baseState();
+      Object.assign(fresh, data || {});
+      Object.assign(state, fresh);
+      for (const b of buildings) state.buildings[b.id] = state.buildings[b.id] || 0;
+      for (const u of upgrades) state.upgrades[u.id] = !!state.upgrades[u.id];
+      for (const m of milestones) state.milestones[m.id] = !!state.milestones[m.id];
+      if (!Array.isArray(state.logs)) state.logs = [];
+      if (typeof state.lastTickAt !== "number") state.lastTickAt = Date.now();
+      if (typeof state.lastSavedAt !== "number") state.lastSavedAt = Date.now();
+      if (typeof state.prestigeBoost !== "number" || state.prestigeBoost < 1) state.prestigeBoost = 1 + state.clout * 0.5;
+    }
+
+    function save() {
+      state.lastSavedAt = Date.now();
+      state.lastTickAt = Date.now();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      addLog("Game saved.");
+      render();
+    }
+
+    function load() {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        hydrateState(parsed);
+        const now = Date.now();
+        const elapsed = Math.max(0, Math.floor((now - state.lastSavedAt) / 1000));
+        if (elapsed > 1) {
+          const offlineSeconds = Math.min(elapsed, 8 * 60 * 60);
+          const offlineIncome = getPassiveIncome() * offlineSeconds;
+          addCash(offlineIncome);
+          addLog(`Offline progress: +${currency(offlineIncome)} over ${offlineSeconds}s.`);
+        }
+        state.lastTickAt = now;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function hardReset() {
+      if (!confirm("Hard reset your save? This cannot be undone.")) return;
+      localStorage.removeItem(SAVE_KEY);
+      location.reload();
+    }
+
+    document.getElementById("goLiveBtn").onclick = goLive;
+    document.getElementById("postClipBtn").onclick = postClip;
+    document.getElementById("collabBtn").onclick = doCollab;
+    document.getElementById("sponsorBtn").onclick = signSponsorDeal;
+    document.getElementById("prestigeBtn").onclick = doPrestige;
+    document.getElementById("saveBtn").onclick = save;
+    document.getElementById("loadBtn").onclick = () => { load(); render(); };
+    document.getElementById("exportBtn").onclick = exportSave;
+    document.getElementById("importBtn").onclick = importSave;
+    document.getElementById("resetBtn").onclick = hardReset;
+
+    setInterval(() => {
+      const now = Date.now();
+      const dt = Math.min(0.25, (now - state.lastTickAt) / 1000 || 0.1);
+      state.lastTickAt = now;
+      state.totalPlaySeconds += dt;
+      addCash(getPassiveIncome() * dt);
+      if (state.sponsorBoostTimer > 0) state.sponsorBoostTimer = Math.max(0, state.sponsorBoostTimer - dt);
+      updateMilestones();
+      render();
+    }, 100);
+
+    setInterval(() => {
+      state.lastSavedAt = Date.now();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    }, AUTOSAVE_MS);
+
+    load();
+    updateMilestones();
+    render();
+  </script>
+</body>
+</html>
